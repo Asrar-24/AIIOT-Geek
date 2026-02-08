@@ -2,6 +2,7 @@ import streamlit as st
 import joblib
 import re
 import string
+import os
 
 def clean_text(text):
     text = text.lower()
@@ -14,8 +15,15 @@ def clean_text(text):
     text = re.sub(r'\w*\d\w*', '', text)
     return text
 
-vectorizer = joblib.load("vectorizer.jb")
-model = joblib.load("model.jb")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load vectorizer
+vectorizer_path = os.path.join(BASE_DIR, "vectorizer.jb")
+vectorizer = joblib.load(vectorizer_path)
+
+# Load model
+model_path = os.path.join(BASE_DIR, "model.jb")
+model = joblib.load(model_path)
 
 st.title("Fake News Dectection:-")
 
