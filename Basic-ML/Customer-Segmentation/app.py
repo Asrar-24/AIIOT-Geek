@@ -10,7 +10,7 @@ import seaborn as sns
 # Page settings
 st.set_page_config(page_title="Customer Segmentation", layout="wide")
 
-st.title("🛍️ Customer Segmentation Using K-Means Clustering")
+st.title("Customer Segmentation Using K-Means Clustering")
 
 
 # Loading trained model
