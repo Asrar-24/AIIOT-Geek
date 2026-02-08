@@ -5,6 +5,8 @@ import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+
 
 
 # Page settings
@@ -12,16 +14,23 @@ st.set_page_config(page_title="Customer Segmentation", layout="wide")
 
 st.title("Customer Segmentation Using K-Means Clustering")
 
+# Get current folder path
+current_dir = os.path.dirname(__file__)
+
+# Full path to model file
+model_path = os.path.join(current_dir, "kmeans_model.pkl")
 
 # Loading trained model
 st.write("Loading trained model...")
-model = joblib.load("kmeans_model.pkl")
+model = joblib.load(model_path)
 st.success("Model loaded successfully")
 
+# Full path to CSV file
+csv_path = os.path.join(current_dir, "Mall_Customers.csv")
 
 # Loading dataset
 st.write("Loading dataset...")
-df = pd.read_csv("Mall_Customers.csv")
+df = pd.read_csv(csv_path)
 st.success("Dataset loaded successfully")
 
 
