@@ -73,4 +73,26 @@ if st.button("Predict Price"):
     df_input = pd.DataFrame([input_dict])
 
 
-    # Encode like training
+     # Encode like training
+    df_encoded = pd.get_dummies(df_input, drop_first=True)
+
+
+    # Add missing columns
+    for col in features:
+        if col not in df_encoded.columns:
+            df_encoded[col] = 0
+
+
+    # Reorder exactly
+    df_encoded = df_encoded[features]
+
+
+    # Predict (log scale)
+    log_price = model.predict(df_encoded)[0]
+
+
+    # Reverse log
+    price = np.exp(log_price)
+
+
+    st.success(f"💰 Estimated Price: ₹ {int(price):,}")
