@@ -48,49 +48,90 @@ furnishingstatus = st.selectbox(
 )
 
 
-# ---------------- PREDICT ----------------
-
 if st.button("Predict Price"):
 
-    input_dict = {
-        "area": area,
-        "bedrooms": bedrooms,
-        "bathrooms": bathrooms,
-        "stories": stories,
-        "parking": parking,
+    try:
 
-        "mainroad": mainroad,
-        "guestroom": guestroom,
-        "basement": basement,
-        "hotwaterheating": hotwaterheating,
-        "airconditioning": airconditioning,
-        "prefarea": prefarea,
+        st.subheader("🔍 DEBUG MODE")
 
-        "furnishingstatus": furnishingstatus
-    }
+        # Raw input
+        input_dict = {
+            "area": area,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "stories": stories,
+            "parking": parking,
 
+            "mainroad": mainroad,
+            "guestroom": guestroom,
+            "basement": basement,
+            "hotwaterheating": hotwaterheating,
+            "airconditioning": airconditioning,
+            "prefarea": prefarea,
 
-    df_input = pd.DataFrame([input_dict])
+            "furnishingstatus": furnishingstatus
+        }
 
-
-     # Encode like training
-    df_encoded = pd.get_dummies(df_input, drop_first=True)
-
-
-    # Add missing columns
-    for col in features:
-        if col not in df_encoded.columns:
-            df_encoded[col] = 0
+        st.write("1️⃣ Raw Input Dict:")
+        st.json(input_dict)
 
 
-    # Reorder exactly
-    df_encoded = df_encoded[features]
+        # DataFrame
+        df_input = pd.DataFrame([input_dict])
+
+        st.write("2️⃣ Input DataFrame:")
+        st.dataframe(df_input)
 
 
-    # Predict (log1p scale)
-    log_price = model.predict(df_encoded)[0]
+        # Dummies
+        df_encoded = pd.get_dummies(df_input, drop_first=True)
 
-    # Reverse log1p
-    price = np.expm1(log_price)
+        st.write("3️⃣ After get_dummies():")
+        st.dataframe(df_encoded)
 
-    st.success(f"💰 Estimated Price: ₹ {int(price):,}")
+
+        # Missing columns
+        missing = []
+        for col in features:
+            if col not in df_encoded.columns:
+                df_encoded[col] = 0
+                missing.append(col)
+
+        st.write("4️⃣ Missing Columns Added:")
+        st.write(missing)
+
+
+        # Extra columns
+        extra = [c for c in df_encoded.columns if c not in features]
+
+        st.write("5️⃣ Extra Columns Removed:")
+        st.write(extra)
+
+
+        # Align
+        df_encoded = df_encoded[features]
+
+        st.write("6️⃣ Final Model Input:")
+        st.dataframe(df_encoded)
+
+
+        # Prediction
+        log_price = model.predict(df_encoded)[0]
+
+        st.write("7️⃣ Raw Model Output (log):", log_price)
+
+
+        # Reverse
+        price = np.expm1(log_price)
+
+        st.write("8️⃣ Final Price:", price)
+
+
+        st.success(f"💰 Estimated Price: ₹ {int(price):,}")
+
+
+    except Exception as e:
+
+        st.error("❌ ERROR")
+        st.exception(e)
+
