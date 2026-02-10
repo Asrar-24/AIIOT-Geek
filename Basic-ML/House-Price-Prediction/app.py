@@ -90,9 +90,8 @@ if st.button("Predict Price"):
     # Predict (log scale)
     log_price = model.predict(df_encoded)[0]
 
-
-    # Reverse log
-    price = np.exp(log_price)
+    # Reverse log10
+    price = 10 ** log_price
 
 
     st.success(f"💰 Estimated Price: ₹ {int(price):,}")
