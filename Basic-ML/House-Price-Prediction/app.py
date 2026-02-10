@@ -75,6 +75,7 @@ if st.button("Predict Price"):
     df_encoded = df_encoded[features]
 
     # Predict
-    price = model.predict(df_encoded)[0]
+    log_price = model.predict(df_encoded)[0] # cause I used log transformation in Training.
+    price = np.exp(log_price)
 
     st.success(f"Estimated Price: ₹ {int(price):,}")
