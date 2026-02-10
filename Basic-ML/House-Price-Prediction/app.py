@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-# ---------------- PATH ----------------
+# ---------- PATH ----------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -13,21 +13,21 @@ model_path = os.path.join(BASE_DIR, "house_price_model.pkl")
 feature_path = os.path.join(BASE_DIR, "model_features.pkl")
 
 
-# ---------------- LOAD ----------------
+# ---------- LOAD ----------
 
 model = joblib.load(model_path)
 features = joblib.load(feature_path)
 
 
-# ---------------- UI ----------------
+# ---------- UI ----------
 
 st.set_page_config(page_title="House Price Prediction")
 
 st.title("🏠 House Price Prediction")
-st.write("Predict House Price using ML")
+st.write("Predict house price using ML")
 
 
-# ---------------- INPUTS ----------------
+# ---------- INPUTS ----------
 
 area = st.number_input("Area (sqft)", 500, 10000, 1500)
 bedrooms = st.number_input("Bedrooms", 1, 10, 3)
@@ -48,90 +48,62 @@ furnishingstatus = st.selectbox(
 )
 
 
+# ---------- PREDICT ----------
+
 if st.button("Predict Price"):
 
-    try:
+    # Raw input
+    input_dict = {
+        "area": area,
+        "bedrooms": bedrooms,
+        "bathrooms": bathrooms,
+        "stories": stories,
+        "parking": parking,
 
-        st.subheader("🔍 DEBUG MODE")
+        "mainroad": mainroad,
+        "guestroom": guestroom,
+        "basement": basement,
+        "hotwaterheating": hotwaterheating,
+        "airconditioning": airconditioning,
+        "prefarea": prefarea,
 
-        # Raw input
-        input_dict = {
-            "area": area,
-            "bedrooms": bedrooms,
-            "bathrooms": bathrooms,
-            "stories": stories,
-            "parking": parking,
-
-            "mainroad": mainroad,
-            "guestroom": guestroom,
-            "basement": basement,
-            "hotwaterheating": hotwaterheating,
-            "airconditioning": airconditioning,
-            "prefarea": prefarea,
-
-            "furnishingstatus": furnishingstatus
-        }
-
-        st.write("1️⃣ Raw Input Dict:")
-        st.json(input_dict)
+        "furnishingstatus": furnishingstatus
+    }
 
 
-        # DataFrame
-        df_input = pd.DataFrame([input_dict])
-
-        st.write("2️⃣ Input DataFrame:")
-        st.dataframe(df_input)
+    # DataFrame
+    df_input = pd.DataFrame([input_dict])
 
 
-        # Dummies
-        df_encoded = pd.get_dummies(df_input, drop_first=True)
-
-        st.write("3️⃣ After get_dummies():")
-        st.dataframe(df_encoded)
+    # Create log_area (same as training)
+    df_input["log_area"] = np.log(df_input["area"])
 
 
-        # Missing columns
-        missing = []
-        for col in features:
-            if col not in df_encoded.columns:
-                df_encoded[col] = 0
-                missing.append(col)
-
-        st.write("4️⃣ Missing Columns Added:")
-        st.write(missing)
+    # Drop area (same as training)
+    df_input = df_input.drop("area", axis=1)
 
 
-        # Extra columns
-        extra = [c for c in df_encoded.columns if c not in features]
-
-        st.write("5️⃣ Extra Columns Removed:")
-        st.write(extra)
+    # Encode
+    df_encoded = pd.get_dummies(df_input, drop_first=True)
 
 
-        # Align
-        df_encoded = df_encoded[features]
-
-        st.write("6️⃣ Final Model Input:")
-        st.dataframe(df_encoded)
-
-
-        # Prediction
-        log_price = model.predict(df_encoded)[0]
-
-        st.write("7️⃣ Raw Model Output (log):", log_price)
+    # Add missing columns
+    for col in features:
+        if col not in df_encoded.columns:
+            df_encoded[col] = 0
 
 
-        # Reverse
-        price = np.expm1(log_price)
-
-        st.write("8️⃣ Final Price:", price)
+    # Reorder
+    df_encoded = df_encoded[features]
 
 
-        st.success(f"💰 Estimated Price: ₹ {int(price):,}")
+    # Predict (log1p scale)
+    log_price = model.predict(df_encoded)[0]
 
 
-    except Exception as e:
+    # Reverse log1p
+    price = np.expm1(log_price)
 
-        st.error("❌ ERROR")
-        st.exception(e)
 
+    # Show result
+    st.success(f"💰 Estimated Price: ₹ {int(price):,}")
